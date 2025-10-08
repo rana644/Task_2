@@ -24,8 +24,8 @@ export function AuthProvider({ children }) {
   }, [])
 
   const register = useCallback(async (name, email, password) => {
-    const res = await api.post('/auth/register', { name, email, password })
-    localStorage.setItem('token', res.data.token)
+    const res = await api.post('/auth/register', { name, email, password }) //I called backend
+    localStorage.setItem('token', res.data.token) // token was created when backend is called and we pass by all code of function in backend now I save it in local storage
     setUser(res.data.user)
   }, [])
 

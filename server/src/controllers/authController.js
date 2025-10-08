@@ -19,7 +19,7 @@ export async function register(req, res, next) {
 
     const passwordHash = await bcrypt.hash(value.password, 10);
     const user = await User.create({ name: value.name, email: value.email, passwordHash });
-    const token = signToken(user);
+    const token = signToken(user); //created the token 
     res.status(201).json({ token, user: publicUser(user) });
   } catch (err) { next(err); }
 }
@@ -31,7 +31,31 @@ const loginSchema = Joi.object({
 
 // TODO: implement login function
 export async function login(req, res, next) {
- 
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required", success: false });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User does not exist", success: false });
+    }
+
+    const isPassword = await bcrypt.compare(password, user.passwordHash);
+    if (!isPassword) {
+      return res.status(400).json({ message: "Invalid password", success: false });
+    }
+
+   const token = signToken(user);
+   res.status(201).json({ token, user: publicUser(user)});
+
+
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ message: "Server error during login", success: false });
+  }
 }
 
 export async function me(req, res) {
@@ -47,3 +71,4 @@ function signToken(user) {
 function publicUser(u) {
   return { id: u._id?.toString() || u.id, name: u.name, email: u.email, role: u.role };
 }
+//restrciting what is returned from the user in the token 
